@@ -131,7 +131,7 @@ def process_content_length(lg):
         return 14
 
 list1 =[]
-for i in range(64620):
+for i in range(len(df["content"])):
     if(type(df["content"].values[i])!=float):#邮件的内容为空，即为nan时,nan是一个float类型
         long = len(df["content"].values[i])
     else:
@@ -150,10 +150,18 @@ df2 = df.groupby(["content_length_type", "label"])["label"].agg(["count"]).reset
 df3 = df2[df2.label == 1][["content_length_type", "count"]].rename(columns={"count": "c1"})
 df4 = df2[df2.label == 0][["content_length_type", "count"]].rename(columns={"count": "c2"})
 df5 = pd.merge(df3, df4)  # 数据集的合并，pandas.merge可依据一个或多个键将不同DataFrame中的行连接起来
-print("**************************************************************888")
+print("*****************************************************************")
 print(df5.head(5))
 df5["c1_rage"] = df5.apply(lambda r: r["c1"] / (r["c1"] + r["c2"]), axis=1)  # 按行进行统计,每个长度类型，垃圾邮件和普通邮件的比例
 df5["c2_rage"] = df5.apply(lambda r: r["c2"] / (r["c1"] + r["c2"]), axis=1)
+plt.plot(df5["content_length_type"],df5["c1_rage"],label=u"垃圾邮件比例")
+plt.plot(df5["content_length_type"],df5["c2_rage"],label=u"正常邮件比例")
+plt.xlabel(u"邮件长度标记")
+plt.ylabel(u"邮件比例")
+plt.grid(True)
+plt.legend(loc=0)
+plt.savefig("垃圾和正常邮件比例.png")
+plt.show()
 def precess_content_sema(x):
     if x > 10000:
         return 0.5 / np.exp(np.log10(x) - np.log10(500)) + np.log(abs(x - 500) + 1) - np.log(abs(x - 10000)) + 1
